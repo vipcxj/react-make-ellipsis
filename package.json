@@ -1,0 +1,59 @@
+{
+  "name": "react-make-ellipsis",
+  "version": "1.0.0",
+  "description": "long text show with ellipsis, support custom ellipsis and auto width",
+  "homepage": "https://vipcxj.github.io/react-make-ellipsis",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vipcxj/react-make-ellipsis.git"
+  },
+  "license": "MIT",
+  "author": "Xiaojing Chen <vipcxj@126.com> (https://github.com/vipcxj)",
+  "bugs": {
+    "url": "https://github.com/vipcxj/react-make-ellipsis/issues"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -cw",
+    "storybook": "start-storybook",
+    "lint": "tslint -p . 'src/**/*.{ts,tsx}'",
+    "prepublishOnly": "npm run build",
+    "clean": "git clean -fdX .",
+    "precommit": "npm run lint"
+  },
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@storybook/addon-info": "^5.0.6",
+    "@storybook/addon-knobs": "^5.0.6",
+    "@storybook/react": "^5.0.6",
+    "@types/react": "^16.8.13",
+    "babel-loader": "^8.0.5",
+    "babel-plugin-typescript-to-proptypes": "^0.17.1",
+    "react-docgen-typescript-webpack-plugin": "^1.1.0",
+    "rollup": "^1.10.0",
+    "rollup-plugin-typescript2": "^0.20.1",
+    "storybook-addon-jsx": "^7.1.0",
+    "ts-loader": "^5.3.3",
+    "tslint": "^5.13.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-config-standard": "^8.0.1",
+    "tslint-loader": "^3.5.4",
+    "tslint-react": "^3.6.0",
+    "typescript": "^3.4.3"
+  },
+  "keywords": [
+    "react",
+    "ellipsis"
+  ]
+}
