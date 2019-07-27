@@ -25,6 +25,8 @@ const App = (
   <Ellipsis 
     style={{ width: '50%', minWidth: 100 }}
     text={text}
+    minFontSizeRadio={0.6}
+    flex
   />
 );
 
@@ -37,6 +39,18 @@ ReactDOM.render(<App />, root);
 - *text* - **string**
 
   The text content.
+  
+- *minFontSize* - **number|string**
+
+  When specify, enable the auto font size mode. If the text size is too long for the container, 
+  reduce the font size until it fit the container or equal `minFontSize`. 
+  Support string with unit `px`, `pt`, `%` and number means `px`
+  
+- *minFontSizeRadio* - **number**
+
+  When specify, enable the auto font size mode. If the text size is too long for the container, 
+  reduce the font size until it fit the container or equal `minFontSizeRadio * initialFontSize`.
+  Range from `0` to `1`.
 
 - *style* - **CSSProperties**
 
@@ -53,6 +67,10 @@ ReactDOM.render(<App />, root);
 - *onEllipsis* - **(showEllipsis: boolean, showText: string, text?: string) => void**
 
   callback when show text changed.
+  
+- *flex* - **boolean** - false
+
+  The flex mode. work well when the text is in a flex container and the browser support flex feature.
 
 ## Ref object
 
