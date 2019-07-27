@@ -1,6 +1,6 @@
 {
   "name": "react-make-ellipsis",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "long text show with ellipsis, support custom ellipsis and auto width",
   "homepage": "https://vipcxj.github.io/react-make-ellipsis",
   "main": "dist/index.js",
