@@ -48,14 +48,14 @@ const setSpanText = (span: HTMLSpanElement, text: string) => {
 };
 
 const adjustFontSize = (vcSpan: HTMLSpanElement, baseFontSize: number, minFontSize: number, cWidth: number) => {
-    let vcWidth = vcSpan.getClientRects()[0].width;
+    let vcWidth = getSpanWidth(vcSpan);
     if (vcWidth !== cWidth) {
         let fontSize = Number.parseFloat(getComputedStyle(vcSpan).fontSize);
         if (vcWidth > cWidth) {
             while (vcWidth > cWidth && fontSize > minFontSize) {
                 fontSize = Math.max(fontSize * 0.95, minFontSize);
                 vcSpan.style.fontSize = `${fontSize}px`;
-                vcWidth = vcSpan.getClientRects()[0].width;
+                vcWidth = getSpanWidth(vcSpan);
             }
         } else {
             let lstFontSize;
@@ -63,7 +63,7 @@ const adjustFontSize = (vcSpan: HTMLSpanElement, baseFontSize: number, minFontSi
                 lstFontSize = fontSize;
                 fontSize = Math.min(fontSize * 1.05, baseFontSize);
                 vcSpan.style.fontSize = `${fontSize}px`;
-                vcWidth = vcSpan.getClientRects()[0].width;
+                vcWidth = getSpanWidth(vcSpan);
             }
             if (vcWidth > cWidth) {
                 fontSize = lstFontSize;
@@ -82,29 +82,29 @@ const calcShowText = (span: HTMLSpanElement, text: string, cWidth: number, eWidt
     let end: number = (lstShowText && lstShowText.length) || text.length;
     let showText: string = lstShowText || text;
     setSpanText(span, showText);
-    let sWidth: number = span.getClientRects()[0].width;
+    let sWidth: number = getSpanWidth(span);
     if (sWidth > cWidth) {
         end = Math.floor(cWidth2 / sWidth * end);
         showText = text.substring(0, end);
         setSpanText(span, showText);
-        sWidth = span.getClientRects()[0].width;
+        sWidth = getSpanWidth(span);
     } else if (sWidth < cWidth) {
         end = Math.max(Math.min(Math.ceil(cWidth2 / sWidth * end), text.length), end + 1);
         showText = text.substring(0, end);
         setSpanText(span, showText);
-        sWidth = span.getClientRects()[0].width;
+        sWidth = getSpanWidth(span);
     }
     while (end > 0 && ((end === text.length && sWidth > cWidth) || (end !== text.length && sWidth > cWidth2))) {
         --end;
         showText = text.substring(0, end);
         setSpanText(span, showText);
-        sWidth = span.getClientRects()[0].width;
+        sWidth = getSpanWidth(span);
     }
     while (end < text.length && sWidth < cWidth2) {
         ++end;
         showText = text.substring(0, end);
         setSpanText(span, showText);
-        sWidth = span.getClientRects()[0].width;
+        sWidth = getSpanWidth(span);
     }
     if (end > 0 && ((end === text.length && sWidth > cWidth) || (end !== text.length && sWidth > cWidth2))) {
         --end;
@@ -149,6 +149,11 @@ const checkShowEllipsis = (showText?: string, text?: string) => {
     return (showText || '') !== (text || '');
 };
 
+function getSpanWidth(span: HTMLSpanElement): number {
+    const rect = span.getClientRects()[0];
+    return rect ? rect.width : 0;
+}
+
 export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllipsis, ellipsis = defaultEllipsis, flex = false, ...rest}: IEllipsisProps, ref: Ref<IEllipsis>) => {
     const cRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
     const vcRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
@@ -167,9 +172,9 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
     useLayoutEffect(() => {
         const cSpan = cRef.current!;
         const vcSpan = vcRef.current!;
-        const cWidth = cSpan.getClientRects()[0].width;
+        const cWidth = getSpanWidth(cSpan);
         const span = vRef.current!;
-        const eWidth = eRef.current!.getClientRects()[0].width;
+        const eWidth = getSpanWidth(eRef.current!);
         const observer = new ResizeObserver(() => {
             const rect = cSpan.getClientRects()[0];
             if (rect) {
@@ -187,7 +192,7 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
                     sRef.current!.style.fontSize = undefined;
                     eRef1.current!.style.fontSize = undefined;
                 }
-                const st1 = calcShowText(span, text || '', cw, eRef.current!.getClientRects()[0].width);
+                const st1 = calcShowText(span, text || '', cw, getSpanWidth(eRef.current!));
                 const se1 = checkShowEllipsis(st1, text);
                 if (onEllipsis) {
                     onEllipsis(se1, st1, text);
