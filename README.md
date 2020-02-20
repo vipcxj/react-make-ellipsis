@@ -41,6 +41,17 @@ const App = (
         flex
       />
     </div>
+    <div id="provide-container-node-which-has-width" style={{ width: 300 }}>
+      <span className="container-left-node" style={{ display: 'inline-block' }}>prefix</span>
+      <Ellipsis
+        containerNode="#provide-container-node-which-has-width" // the selector of the container node. the element variable is also supported.
+        containerLeftNodes=".container-left-node"
+        text={text}
+        minFontSizeRadio={0.6}
+        flex
+      />
+      <span className="container-left-node" style={{ display: 'inline-block' }}>postfix</span>
+    </div>
   </div>
 );
 
@@ -88,11 +99,16 @@ ReactDOM.render(<App />, root);
   
 - *containerNode?* - **Element | string**
 
-  the container node which use to calc the content width.
+  the container node which use to calc the content width. The selector is also supported.
   
 - *containerLeftSpace?* - **number**
 
   the content width is ( the width of `containerNode` or the node which container the component ) - `containerLeftSpace`
+  
+- *containerLeftNodes?* - **string | Element | Element[]**
+
+  the nodes used to calc the `containerLeftSpace`. will be omitted if `containerLeftSpace` has been used.
+  The selector is also supported.
 
 ## Ref object
 
@@ -107,6 +123,10 @@ ReactDOM.render(<App />, root);
 - *showEllipsis* - **boolean**
 
   whether ellipsis show or not.
+  
+- *node* - **HTMLNode**
+
+  the component root node.
   
 ## Note
 

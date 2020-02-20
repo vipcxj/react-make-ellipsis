@@ -1,4 +1,4 @@
-import React, {forwardRef, Ref, useImperativeHandle, useLayoutEffect, useRef, useState} from 'react';
+import React, {forwardRef, Ref, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
 if (!Element.prototype.matches) {
@@ -134,9 +134,10 @@ export interface IEllipsis {
     update: () => void;
     readonly showText: string;
     readonly showEllipsis: boolean;
+    node: HTMLSpanElement;
 }
 
-export interface IEllipsisProps {
+interface IBaseEllipsisProps {
     text?: string;
     minFontSize?: number | string;
     minFontSizeRadio?: number;
@@ -147,6 +148,10 @@ export interface IEllipsisProps {
     flex?: boolean;
     containerNode?: Element | string;
     containerLeftSpace?: number;
+}
+
+export interface IEllipsisProps extends IBaseEllipsisProps {
+    containerLeftNodes?: Element | string | Element[];
 }
 
 const virtualBlockStyle: React.CSSProperties = {
@@ -184,12 +189,34 @@ function findNode(current?: Element, node?: Element | string): Element | null {
         target = target.parentElement;
     }
     if (!target && current) {
-        target = document.querySelector(node);
+        let container = current.parentNode;
+        target = container && container.querySelector(node) || null;
+        while (container && !target) {
+            container = container.parentNode;
+            target = container && container.querySelector(node) || null;
+        }
+
     }
     return target;
  }
 
-export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllipsis, ellipsis = defaultEllipsis, flex = false, containerNode, containerLeftSpace = 0, ...rest}: IEllipsisProps, ref: Ref<IEllipsis>) => {
+function findNodes(current?: Element, node?: Element | string | Element[]): Element[] {
+    if (!node) return [];
+    if (typeof node !== 'string') return Array.isArray(node) ? node.filter(n => n) : (node ? [node] : []);
+    if (current) {
+        let container = current.parentNode;
+        let target = container && container.querySelectorAll(node) || null;
+        while (container && target && target.length === 0) {
+            container = container.parentNode;
+            target = container && container.querySelectorAll(node) || null;
+        }
+        return target ? Array.prototype.slice.call(target) : [];
+    } else {
+        return [];
+    }
+}
+
+const Base = forwardRef(({ text, minFontSize, minFontSizeRadio, style, onEllipsis, ellipsis = defaultEllipsis, flex = false, containerNode, containerLeftSpace = 0, ...rest}: IBaseEllipsisProps, ref: Ref<IEllipsis>) => {
     const cRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
     const vcRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
     const vRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
@@ -200,6 +227,7 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
     const [refresh, setRefresh] = useState<boolean>(true);
     const showEllipsis = checkShowEllipsis(showText, text);
     useImperativeHandle(ref, () => ({
+        node: cRef.current,
         showEllipsis: checkShowEllipsis(showText, text),
         showText: showText || '',
         update: () => setRefresh(!refresh),
@@ -263,4 +291,39 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
             </span>
         </span>
     )
-})
+});
+
+function calcAllWidth(nodes: Element[]) {
+    let value = 0;
+    nodes.forEach(node => {
+        const rects = node.getClientRects();
+        for (let i = 0; i < rects.length; ++i) {
+            const rect = rects.item(i);
+            if (rect) {
+                value += rect.width;
+            }
+        }
+    });
+    return value;
+}
+
+export default forwardRef((props: IEllipsisProps, ref: Ref<IEllipsis>) => {
+    const { containerLeftNodes, ...restProps } = props;
+    const bRef = useRef<IEllipsis>(null);
+    const [space, setSpace] = useState<number>(0);
+    useImperativeHandle(ref, () => bRef.current, []);
+    useEffect(() => {
+        const nodes = findNodes(bRef.current.node, containerLeftNodes);
+        const observer = new ResizeObserver(() => {
+            setSpace(calcAllWidth(nodes));
+        });
+        setSpace(calcAllWidth(nodes));
+        nodes.forEach(node => observer.observe(node));
+        return () => {
+            observer.disconnect();
+        }
+    }, [containerLeftNodes]);
+    return (
+        <Base ref={bRef} containerLeftSpace={space || undefined} {...restProps} />
+    );
+});

@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import { storiesOf } from '@storybook/react';
 import { number, text, radios, boolean } from '@storybook/addon-knobs';
 import Ellipsis from '../src';
-import ResizeObserver from "resize-observer-polyfill";
 
 const createWidthType = (label, group) => {
   return radios(label, { Pixel: 'pixel', Percent: 'percent' }, 'pixel', group);
@@ -39,34 +38,37 @@ const createMinFontSize = (label, group, type) => {
 };
 
 const WithCustomContainerNode = (props) => {
-  const { label, width, useSelector = false, ...rest } = props;
-  const lRef = useRef(null);
-  const cRef = useRef(null);
-  const [leftSpace, setLeftSpace] = useState(0);
+  const { labels = [], width, useSelector = false, ...rest } = props;
+  labels.length = Math.min(labels.length, 3);
+  const ref0 = useRef(null);
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const refs = useMemo(() => {
+    const value = [ref1, ref2, ref3];
+    value.length = labels.length;
+    return value;
+  }, [labels.length]);
+  const [nodes, setNodes] = useState([]);
   useEffect(() => {
-    const observer = new ResizeObserver(() => {
-      const space = lRef.current && lRef.current.getClientRects()[0];
-      setLeftSpace(space && space.width || 0);
-    });
-    const space = lRef.current && lRef.current.getClientRects()[0];
-    setLeftSpace(space && space.width || 0);
-    observer.observe(lRef.current);
-    return () => {
-      observer.disconnect();
-    }
-  }, []);
+    setNodes(refs.map(ref => ref.current));
+  }, [refs]);
   if (useSelector) {
     return (
-      <div ref={cRef} className="container-for-test" style={{ width }}>
-        <span style={{ display: 'inline-block' }} ref={lRef}>{ label }</span>
-        <Ellipsis {...rest} containerNode=".container-for-test" containerLeftSpace={leftSpace} />
+      <div className="container-for-test" style={{ width }}>
+        { labels.map((label, i) => (
+          <span key={i} className="label-for-test" style={{ display: 'inline-block' }}>{ label }</span>
+        )) }
+        <Ellipsis {...rest} containerNode=".container-for-test" containerLeftNodes=".label-for-test" />
       </div>
     )
   } else {
     return (
-      <div ref={cRef} style={{ width }}>
-        <span style={{ display: 'inline-block' }} ref={lRef}>{ label }</span>
-        <Ellipsis {...rest} containerNode={cRef.current} containerLeftSpace={leftSpace} />
+      <div ref={ref0} style={{ width }}>
+        { labels.map((label, i) => (
+          <span key={i} ref={refs[i]} style={{ display: 'inline-block' }}>{ label }</span>
+        )) }
+        <Ellipsis {...rest} containerNode={ref0.current} containerLeftNodes={nodes} />
       </div>
     )
   }
@@ -111,16 +113,21 @@ storiesOf('ellipsis', module)
     () => {
       const minWidthType = createWidthType('Min Width Type', 'Min Width');
       const minFontSizeType = createMinFontSizeType('Min Font Size Type', 'Text');
-      const label = text('label', 'label', 'Container');
       const width = number('width', 600, { range: true, min: 0, max: 1000, step: 10 }, 'Container');
+      const useSelector = boolean('use selector', false, 'Container');
+      const labelNum = number('label num', 1, { range: true, min: 1, max: 3, step: 1 }, 'Container');
+      const labels = [];
+      for (let i = 0; i < labelNum; ++i) {
+        labels.push(
+          text(`label${i}`, 'label', 'Container')
+        );
+      }
       return (
         <WithCustomContainerNode
-          label={label}
+          labels={labels}
           width={width}
-          useSelector={boolean('use selector', false, 'Container')}
-          style={{ minWidth: createWidth('Min Width', 'Min Width', minWidthType, 50) }}
+          useSelector={useSelector}
           text={text('Text', 'gdlgjj;l 尽量少干 根 kjlsjg g 00 -s9 0 -- ds-g-sdg-sg-', 'Text')}
-          ellipsis=" More"
           flex={boolean('flex', false, 'Base')}
           { ...createMinFontSize('Min Font Size', 'Text', minFontSizeType) }
         />
