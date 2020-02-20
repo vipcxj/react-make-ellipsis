@@ -111,7 +111,6 @@ storiesOf('ellipsis', module)
   .add(
     'with custom container node',
     () => {
-      const minWidthType = createWidthType('Min Width Type', 'Min Width');
       const minFontSizeType = createMinFontSizeType('Min Font Size Type', 'Text');
       const width = number('width', 600, { range: true, min: 0, max: 1000, step: 10 }, 'Container');
       const useSelector = boolean('use selector', false, 'Container');
@@ -128,7 +127,6 @@ storiesOf('ellipsis', module)
           width={width}
           useSelector={useSelector}
           text={text('Text', 'gdlgjj;l 尽量少干 根 kjlsjg g 00 -s9 0 -- ds-g-sdg-sg-', 'Text')}
-          flex={boolean('flex', false, 'Base')}
           { ...createMinFontSize('Min Font Size', 'Text', minFontSizeType) }
         />
       );
