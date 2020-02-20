@@ -45,8 +45,8 @@ const WithCustomContainerNode = (props) => {
   const [leftSpace, setLeftSpace] = useState(0);
   useEffect(() => {
     const observer = new ResizeObserver(() => {
-      const space = lRef.current && space.width && lRef.current.getClientRects()[0];
-      setLeftSpace(space || 0);
+      const space = lRef.current && lRef.current.getClientRects()[0];
+      setLeftSpace(space && space.width || 0);
     });
     const space = lRef.current && lRef.current.getClientRects()[0];
     setLeftSpace(space && space.width || 0);
@@ -58,14 +58,14 @@ const WithCustomContainerNode = (props) => {
   if (useSelector) {
     return (
       <div ref={cRef} className="container-for-test" style={{ width }}>
-        <span ref={lRef}>{ label }</span>
+        <span style={{ display: 'inline-block' }} ref={lRef}>{ label }</span>
         <Ellipsis {...rest} containerNode=".container-for-test" containerLeftSpace={leftSpace} />
       </div>
     )
   } else {
     return (
       <div ref={cRef} style={{ width }}>
-        <span ref={lRef}>{ label }</span>
+        <span style={{ display: 'inline-block' }} ref={lRef}>{ label }</span>
         <Ellipsis {...rest} containerNode={cRef.current} containerLeftSpace={leftSpace} />
       </div>
     )
