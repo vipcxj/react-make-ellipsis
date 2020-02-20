@@ -1,6 +1,22 @@
 import React, {forwardRef, Ref, useImperativeHandle, useLayoutEffect, useRef, useState} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
+if (!Element.prototype.matches) {
+    Element.prototype.matches =
+        (Element.prototype as any).matchesSelector ||
+        (Element.prototype as any).mozMatchesSelector ||
+        (Element.prototype as any).msMatchesSelector ||
+        (Element.prototype as any).oMatchesSelector ||
+        Element.prototype.webkitMatchesSelector ||
+        function (s: string) {
+            const matches = (this.parentElement !== this && this.parentElement || this.document || this.ownerDocument).querySelectorAll(s);
+            let i = matches.length;
+            // tslint:disable-next-line:no-empty
+            while (--i >= 0 && matches.item(i) !== this) {}
+            return i > -1;
+        }
+}
+
 const PIXELS_PER_INCH = 96;
 const EL_FOR_TEST_DEFAULT_FONTSIZE = 'el-for-test-default-font-size';
 function getDefaultFontSize(){
@@ -129,6 +145,8 @@ export interface IEllipsisProps {
     ellipsis?: React.ReactNode;
     onEllipsis?: (showEllipsis: boolean, showText: string, text?: string) => void;
     flex?: boolean;
+    containerNode?: Element | string;
+    containerLeftSpace?: number;
 }
 
 const virtualBlockStyle: React.CSSProperties = {
@@ -143,18 +161,35 @@ const showTextStyle: React.CSSProperties = {
     whiteSpace: 'pre',
 };
 
+const ellipsisStyle: React.CSSProperties = {
+    whiteSpace: 'pre',
+};
+
 const defaultEllipsis = <span>...</span>;
 
 const checkShowEllipsis = (showText?: string, text?: string) => {
     return (showText || '') !== (text || '');
 };
 
-function getSpanWidth(span: HTMLSpanElement): number {
+function getSpanWidth(span: Element, leftSpace: number = 0): number {
     const rect = span.getClientRects()[0];
-    return rect ? rect.width : 0;
+    return rect ? Math.max(rect.width - leftSpace, 0) : 0;
 }
 
-export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllipsis, ellipsis = defaultEllipsis, flex = false, ...rest}: IEllipsisProps, ref: Ref<IEllipsis>) => {
+function findNode(current?: Element, node?: Element | string): Element | null {
+    if (!node) return null;
+    if (typeof node !== 'string') return node;
+    let target = current && current.parentElement || null;
+    while (target && !target.matches(node)) {
+        target = target.parentElement;
+    }
+    if (!target && current) {
+        target = document.querySelector(node);
+    }
+    return target;
+ }
+
+export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllipsis, ellipsis = defaultEllipsis, flex = false, containerNode, containerLeftSpace = 0, ...rest}: IEllipsisProps, ref: Ref<IEllipsis>) => {
     const cRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
     const vcRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
     const vRef: Ref<HTMLSpanElement> = useRef<HTMLSpanElement>(null);
@@ -165,20 +200,17 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
     const [refresh, setRefresh] = useState<boolean>(true);
     const showEllipsis = checkShowEllipsis(showText, text);
     useImperativeHandle(ref, () => ({
-        get showText() { return showText || ''; },
-        get showEllipsis() { return checkShowEllipsis(showText, text); },
+        showEllipsis: checkShowEllipsis(showText, text),
+        showText: showText || '',
         update: () => setRefresh(!refresh),
     }), [text, showText, refresh]);
     useLayoutEffect(() => {
-        const cSpan = cRef.current!;
+        const cSpan = findNode(cRef.current, containerNode) || cRef.current!;
         const vcSpan = vcRef.current!;
-        const cWidth = getSpanWidth(cSpan);
         const span = vRef.current!;
-        const eWidth = getSpanWidth(eRef.current!);
         const observer = new ResizeObserver(() => {
-            const rect = cSpan.getClientRects()[0];
-            if (rect) {
-                const cw = rect.width;
+            const cw = getSpanWidth(cSpan, containerLeftSpace);
+            if (cw) {
                 if (minFontSizeRadio || minFontSize) {
                     const baseFontSize = Number.parseFloat(getComputedStyle(cSpan).fontSize);
                     const minFontSizePx = Math.max(minFontSize && toPx(minFontSize) || baseFontSize * Math.max(Math.min(minFontSizeRadio || 1, 1), 0), 1);
@@ -200,7 +232,9 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
                 setShowText(st1);
             }
         });
-        observer.observe(cRef.current!);
+        observer.observe(cSpan);
+        const cWidth = getSpanWidth(cSpan, containerLeftSpace);
+        const eWidth = getSpanWidth(eRef.current!);
         const st = calcShowText(span, text || '', cWidth, eWidth);
         const se = checkShowEllipsis(st, text);
         if (onEllipsis) {
@@ -210,7 +244,7 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
         return () => {
             observer.disconnect();
         }
-    }, [text, refresh, ellipsis, minFontSizeRadio, minFontSize]);
+    }, [text, refresh, ellipsis, minFontSizeRadio, minFontSize, containerNode, containerLeftSpace]);
     const containerStyle = style ? {
         display: flex ? 'flex' : 'inline-block',
         ...style,
@@ -224,8 +258,8 @@ export default forwardRef(({text, minFontSize, minFontSizeRadio, style, onEllips
                 <span ref={eRef}>{ ellipsis }</span>
             </span>
             <span key="showText" style={showTextStyle} ref={sRef}>{showText}</span>
-            <span key="ellipsis" ref={eRef1}>
-                {showEllipsis ? ellipsis : null}
+            <span key="ellipsis" style={ellipsisStyle} ref={eRef1}>
+                { showEllipsis ? ellipsis : null }
             </span>
         </span>
     )

@@ -22,12 +22,26 @@ import Ellipsis from 'react-make-ellipsis';
 const text = 'very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long text';
 
 const App = (
-  <Ellipsis 
-    style={{ width: '50%', minWidth: 100 }}
-    text={text}
-    minFontSizeRadio={0.6}
-    flex
-  />
+  <div>
+    <div id="provide width">
+      <Ellipsis 
+        style={{ width: '50%', minWidth: 100 }}
+        text={text}
+        minFontSizeRadio={0.6}
+        flex
+      />
+    </div>
+    <div id="provide-container-node-which-has-width" style={{ width: 300 }}>
+      <span style={{ display: 'inline-block', width: 100 }}>label</span>
+      <Ellipsis
+        containerNode="#provide-container-node-which-has-width" // the selector of the container node. the element variable is also supported.
+        containerLeftSpace={100} // 100 is the width of label
+        text={text}
+        minFontSizeRadio={0.6}
+        flex
+      />
+    </div>
+  </div>
 );
 
 const root = document.getElementById('root');
@@ -36,41 +50,49 @@ ReactDOM.render(<App />, root);
 ```
 
 ## Properties
-- *text* - **string**
+- *text?* - **string**
 
   The text content.
   
-- *minFontSize* - **number|string**
+- *minFontSize?* - **number|string**
 
   When specify, enable the auto font size mode. If the text size is too long for the container, 
   reduce the font size until it fit the container or equal `minFontSize`. 
   Support string with unit `px`, `pt`, `%` and number means `px`
   
-- *minFontSizeRadio* - **number**
+- *minFontSizeRadio?* - **number**
 
   When specify, enable the auto font size mode. If the text size is too long for the container, 
   reduce the font size until it fit the container or equal `minFontSizeRadio * initialFontSize`.
   Range from `0` to `1`.
 
-- *style* - **CSSProperties**
+- *style?* - **CSSProperties**
 
   The component style.
   
-- *className* - **string**
+- *className?* - **string**
 
   The component className.
   
-- *ellipsis* - **ReactNode** - `<span> ...</span>`
+- *ellipsis?* - **ReactNode** - `<span> ...</span>`
 
   The custom ellipsis component.
   
-- *onEllipsis* - **(showEllipsis: boolean, showText: string, text?: string) => void**
+- *onEllipsis?* - **(showEllipsis: boolean, showText: string, text?: string) => void**
 
   callback when show text changed.
   
-- *flex* - **boolean** - false
+- *flex?* - **boolean** - false
 
   The flex mode. work well when the text is in a flex container and the browser support flex feature.
+  
+- *containerNode?* - **Element | string**
+
+  the container node which use to calc the content width.
+  
+- *containerLeftSpace?* - **number**
+
+  the content width is ( the width of `containerNode` or the node which container the component ) - `containerLeftSpace`
 
 ## Ref object
 
