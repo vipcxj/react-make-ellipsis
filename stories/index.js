@@ -131,4 +131,22 @@ storiesOf('ellipsis', module)
         />
       );
     }
-  );
+  )
+  .add(
+  'max width mode',
+  () => {
+    const minFontSizeType = createMinFontSizeType('Min Font Size Type', 'Text');
+    const maxWidthType = createWidthType('Max Width Type', 'Width');
+    return (
+      <div id="container" style={{ width: 800, border: '1px solid black' }}>
+        <Ellipsis
+          style={{ maxWidth: createWidth('Max Width', 'Width', maxWidthType, 250) }}
+          containerNode="#container"
+          text={text('Text', 'gdlgjj;l 尽量少干 根 kjlsjg g 00 -s9 0 -- ds-g-sdg-sg-', 'Text')}
+          flex={boolean('flex', false, 'Base')}
+          { ...createMinFontSize('Min Font Size', 'Text', minFontSizeType) }
+        />
+      </div>
+    );
+  }
+);
