@@ -256,27 +256,25 @@ function fit(
     let cw = getSpanWidth(cNode, containerLeftSpace);
     cw = (typeof maxWidth !== 'undefined' && !isNaN(maxWidth)) ? Math.min(cw, maxWidth) : cw;
     cw = (typeof minWidth !== 'undefined' && !isNaN(minWidth)) ? Math.max(cw, minWidth) : cw;
-    if (cw) {
-        if (minFontSizeRadio || minFontSize) {
-            const baseFontSize = getCssPixels(cSpan, 'font-size') || DEFAULT_FONT_SIZE;
-            const minFontSizePx = Math.max(minFontSize && toPx(minFontSize) || baseFontSize * Math.max(Math.min(minFontSizeRadio || 1, 1), 0), 1);
-            const fs = adjustFontSize(vcSpan, baseFontSize, minFontSizePx, cw);
-            if (fs !== undefined) {
-                sRef.current!.style.fontSize = `${fs}px`;
-                eRef1.current!.style.fontSize = `${fs}px`;
-            }
-        } else {
-            vcSpan.style.fontSize = undefined;
-            sRef.current!.style.fontSize = undefined;
-            eRef1.current!.style.fontSize = undefined;
+    if (minFontSizeRadio || minFontSize) {
+        const baseFontSize = getCssPixels(cSpan, 'font-size') || DEFAULT_FONT_SIZE;
+        const minFontSizePx = Math.max(minFontSize && toPx(minFontSize) || baseFontSize * Math.max(Math.min(minFontSizeRadio || 1, 1), 0), 1);
+        const fs = adjustFontSize(vcSpan, baseFontSize, minFontSizePx, cw);
+        if (fs !== undefined) {
+            sRef.current!.style.fontSize = `${fs}px`;
+            eRef1.current!.style.fontSize = `${fs}px`;
         }
-        const st1 = calcShowText(span, text || '', cw, eWidth);
-        const se1 = checkShowEllipsis(st1, text);
-        if (onEllipsis) {
-            onEllipsis(se1, st1, text);
-        }
-        setShowText(st1);
+    } else {
+        vcSpan.style.fontSize = undefined;
+        sRef.current!.style.fontSize = undefined;
+        eRef1.current!.style.fontSize = undefined;
     }
+    const st1 = calcShowText(span, text || '', cw, eWidth);
+    const se1 = checkShowEllipsis(st1, text);
+    if (onEllipsis) {
+        onEllipsis(se1, st1, text);
+    }
+    setShowText(st1);
 }
 
 const Base = forwardRef((
@@ -307,24 +305,13 @@ const Base = forwardRef((
     if (width) {
         containerNode = containerLeftSpace = undefined;
     }
+    // noinspection JSUnusedGlobalSymbols
     useImperativeHandle(ref, () => ({
         node: cRef.current,
         showEllipsis: checkShowEllipsis(showText, text),
         showText: showText || '',
         update: () => setRefresh(!refresh),
     }), [text, showText, refresh]);
-    useLayoutEffect(() => {
-        const observer = new ResizeObserver(() => {
-            fit(cRef, vcRef, vRef, eRef, sRef, eRef1, text, setShowText, onEllipsis, containerNode, containerLeftSpace, minFontSize, minFontSizeRadio);
-        });
-        fit(cRef, vcRef, vRef, eRef, sRef, eRef1, text, setShowText, onEllipsis, containerNode, containerLeftSpace, minFontSize, minFontSizeRadio);
-        const cSpan = cRef.current!;
-        const cNode = findNode(cSpan, containerNode) || cSpan;
-        observer.observe(cNode);
-        return () => {
-            observer.disconnect();
-        }
-    }, [text, refresh, ellipsis, minFontSizeRadio, minFontSize, containerNode, containerLeftSpace]);
     const containerStyle: React.CSSProperties = React.useMemo(() => style ? {
         display: flex ? 'flex' : 'inline-block',
         ...style,
@@ -337,6 +324,18 @@ const Base = forwardRef((
         minWidth: minWidth || style.minWidth,
         width: width || style.width,
     }, [style, flex, minWidth, maxWidth, width]);
+    useLayoutEffect(() => {
+        const observer = new ResizeObserver(() => {
+            fit(cRef, vcRef, vRef, eRef, sRef, eRef1, text, setShowText, onEllipsis, containerNode, containerLeftSpace, minFontSize, minFontSizeRadio);
+        });
+        fit(cRef, vcRef, vRef, eRef, sRef, eRef1, text, setShowText, onEllipsis, containerNode, containerLeftSpace, minFontSize, minFontSizeRadio);
+        const cSpan = cRef.current!;
+        const cNode = findNode(cSpan, containerNode) || cSpan;
+        observer.observe(cNode);
+        return () => {
+            observer.disconnect();
+        }
+    }, [text, refresh, ellipsis, minFontSizeRadio, minFontSize, containerNode, containerLeftSpace, containerStyle]);
     return (
         <span ref={cRef} style={containerStyle} {...rest}>
             <span key="virtualEllipsis" ref={vcRef} style={virtualBlockStyle}>

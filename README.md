@@ -52,6 +52,16 @@ const App = (
       />
       <span className="container-left-node" style={{ display: 'inline-block' }}>postfix</span>
     </div>
+    <div id="provide-container-node-which-has-width" style={{ width: 500 }}>
+      <Ellipsis
+        containerNode="#provide-container-node-which-has-width" // the selector of the container node. the element variable is also supported.
+        maxWidth={300} // the show text width will not longer than 300 not 500
+        text={text}
+        minFontSizeRadio={0.6}
+        flex
+      />
+    </div>
+    <div style={{ display: 'inline-block', width: 200 }}>left space</div>
   </div>
 );
 
@@ -64,6 +74,22 @@ ReactDOM.render(<App />, root);
 - *text?* - **string**
 
   The text content.
+  
+- *width?* - **number**
+
+  the component width. the width in style is also supported. this prop will override the width in style prop.
+  
+- *maxWidth?* - **number**
+
+  the component max width. the maxWidth in style is also supported. this prop will override the maxWidth in style prop.
+  If the given width ( the width prop or width in style prop or the width of containerNode minus containerLeftSpace ) is greater than the max width,
+  the max width will be used to calculate the show text.
+  
+- *minWidth?* - **number**
+
+  the component min width. the minWidth in style is also supported. this prop will override the minWidth in style prop.
+  If the given width ( the width prop or width in style prop or the width of containerNode minus containerLeftSpace ) is smaller than the min width,
+  the min width will be used to calculate the show text.
   
 - *minFontSize?* - **number|string**
 
@@ -131,3 +157,6 @@ ReactDOM.render(<App />, root);
 ## Note
 
 The component require its width not depend on its content. Because its real content depends on its width.
+So a computed width should be provide. It can be provided by the width prop, the width in style prop or the width of containerNode prop.
+If the width prop is a percent value, one ancestor of the component should has a concrete width.
+The flex model is encouraged, because it support providing the width without specify concrete width.

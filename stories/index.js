@@ -135,16 +135,16 @@ storiesOf('ellipsis', module)
   .add(
   'max width mode',
   () => {
-    const minFontSizeType = createMinFontSizeType('Min Font Size Type', 'Text');
-    const maxWidthType = createWidthType('Max Width Type', 'Width');
+    const minFontSizeType = createMinFontSizeType('Min Font Size Type', 'Base');
+    const maxWidth = number('Max Width', 250, { range: true, min: 0, max: 900, step: 10 }, 'Base');
     return (
       <div id="container" style={{ width: 800, border: '1px solid black' }}>
         <Ellipsis
-          style={{ maxWidth: createWidth('Max Width', 'Width', maxWidthType, 250) }}
+          style={{ maxWidth }}
           containerNode="#container"
-          text={text('Text', 'gdlgjj;l 尽量少干 根 kjlsjg g 00 -s9 0 -- ds-g-sdg-sg-', 'Text')}
+          text={text('Text', 'gdlgjj;l 尽量少干 根 kjlsjg g 00 -s9 0 -- ds-g-sdg-sg-', 'Base')}
           flex={boolean('flex', false, 'Base')}
-          { ...createMinFontSize('Min Font Size', 'Text', minFontSizeType) }
+          { ...createMinFontSize('Min Font Size', 'Base', minFontSizeType) }
         />
       </div>
     );
